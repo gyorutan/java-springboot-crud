@@ -1,70 +1,37 @@
 package com.tpi.springboot.crud.demo.controller;
 
 import com.tpi.springboot.crud.demo.domain.User;
+import com.tpi.springboot.crud.demo.dto.user.UserResponseDto;
+import com.tpi.springboot.crud.demo.exception.CustomException;
+import com.tpi.springboot.crud.demo.exception.ErrorCode;
 import com.tpi.springboot.crud.demo.service.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
     @Autowired
     private UserService userService;
 
-    // USER REGISTER
-    @PostMapping
-    public ResponseEntity<String> createUser(@RequestBody User user) {
-        userService.createUser(user);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body("User created successfully with ID : " + user.getId());
-    }
-
-    // USER LOGIN
-    @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody User user) {
-        User loggedInUser = userService.loginUser(user);
-
-        if (loggedInUser != null) {
-            return ResponseEntity
-                    .ok("Login successful for user : " + loggedInUser.getUsername());
-        } else {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Login failed. Invalid username or password.");
-        }
-    }
-
-    @GetMapping("/id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
-        User user = userService.getUserById(id);
-
-        if (user != null) {
-            return ResponseEntity.ok(user);
+    @GetMapping("/current-user")
+    public ResponseEntity<UserResponseDto> getCurrentUser(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_ACCESS); // 헤더 형식이 잘못됨
         }
 
-        return ResponseEntity.notFound().build();
-    }
+        String accessToken = authorizationHeader.substring(7);
 
-    @GetMapping("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable("username") String username) {
-        User user = userService.getUserByUsername(username);
+        User user = userService.getUser(accessToken);
 
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        }
+        UserResponseDto userResponseDto = new UserResponseDto(
+                user.getId(),
+                user.getUsername()
+        );
 
-        return ResponseEntity.notFound().build();
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+        return ResponseEntity.ok().body(userResponseDto);
     }
 }

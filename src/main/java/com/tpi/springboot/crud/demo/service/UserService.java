@@ -1,60 +1,31 @@
 package com.tpi.springboot.crud.demo.service;
 
 import com.tpi.springboot.crud.demo.domain.User;
+import com.tpi.springboot.crud.demo.exception.CustomException;
+import com.tpi.springboot.crud.demo.exception.ErrorCode;
+import com.tpi.springboot.crud.demo.mapper.AuthMapper;
 import com.tpi.springboot.crud.demo.mapper.UserMapper;
+import com.tpi.springboot.crud.demo.provider.JwtTokenProvider;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
+@AllArgsConstructor
 public class UserService {
-
     @Autowired
     private UserMapper userMapper;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public User getUser(String accessToken) {
+        jwtTokenProvider.validateToken(accessToken);
 
-    public void createUser(User user) {
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userMapper.insertUser(user);
-    }
+        User user = userMapper.selectUserByUsername(jwtTokenProvider.getUsername(accessToken));
 
-    public User loginUser(User user) {
-        User existUser = userMapper.selectUserByUsername(user.getUsername());
-
-        if (existUser == null) {
-            return null;
+        if (user == null) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
-        if (passwordEncoder.matches(user.getPassword(), existUser.getPassword())) {
-            existUser.setPassword(null);
-            return existUser;
-        } else {
-            return null;
-        }
-    }
-
-    public User getUserById(Long id) {
-        return userMapper.selectUserById(id);
-    }
-
-    public List<User> getAllUsers() {
-        return  userMapper.selectAllUsers();
-    }
-
-    public void updateUser(User user) {
-        userMapper.updateUser(user);
-    }
-
-    public void deleteUser(Long id) {
-        userMapper.deleteUser(id);
-    }
-
-    public User getUserByUsername(String username) {
-        return userMapper.selectUserByUsername(username);
+        return user;
     }
 }

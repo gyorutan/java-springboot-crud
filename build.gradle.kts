@@ -26,8 +26,19 @@ dependencies {
 	implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3")
 	runtimeOnly("org.postgresql:postgresql")
 
-	// password hashing
+	// security
 	implementation("org.springframework.boot:spring-boot-starter-security")
+
+	// Lombok Dependency 추가
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
+	testCompileOnly("org.projectlombok:lombok")
+	testAnnotationProcessor("org.projectlombok:lombok")
+
+	// JWT
+	implementation("io.jsonwebtoken:jjwt-api:0.12.6") // 최신 버전 확인
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6") // 최신 버전 확인
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6") // 최신 버전 확인
 }
 
 

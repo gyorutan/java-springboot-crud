@@ -1,4 +1,4 @@
-package com.tpi.springboot.crud.demo.domain;
+package com.tpi.springboot.crud.demo.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-    private Long id;
+public class UserRegisterRequestDto {
     private String username;
     private String password;
-
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
 }
